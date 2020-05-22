@@ -18,6 +18,6 @@ export class GridRender {
 
   fillAll(color: string) {
     this.ctx.fillStyle = color;
-    this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.ctx.fillRect(0, 0, 1440, 1440);
   }
 }

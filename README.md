@@ -27,7 +27,10 @@ yarn && yarn start
 
 ### Interesting files:
 
- - we
+ - `web_ui` contains ui code
+   - [`web_ui/src/app.ts`](web_ui/src/app.ts) - is main setup
+   - web_ui/src/*.ts - are other systems
+ - [`web_executor/src/executor.rs`](web_executor/src/executor.rs) (you shouldn't need to touch this file), it defines the source of truth for the components used in Soviet Golf
 
 ## TODO:
 

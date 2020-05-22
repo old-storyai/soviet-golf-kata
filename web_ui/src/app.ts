@@ -91,7 +91,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
   );
 
   // TODO 1: add other golf balls at random each frame
-  function addFallingGolfBall(
+  function addMovingGolfBall(
     color: GolfBallColors,
     position: ui.Position,
     velocity = ui.Velocity({
@@ -107,7 +107,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
     );
   }
 
-  addFallingGolfBall(
+  addMovingGolfBall(
     "blue",
     ui.Position({
       x: 200,
@@ -115,7 +115,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
     })
   );
 
-  addFallingGolfBall(
+  addMovingGolfBall(
     "blue",
     ui.Position({
       x: 700,
@@ -123,11 +123,11 @@ function NewGame(viewElt: HTMLCanvasElement) {
     })
   );
 
-  addFallingGolfBall(
+  addMovingGolfBall(
     "red",
     ui.Position({
       x: 700,
-      y: 1200 ,
+      y: 1200,
     }),
     ui.Velocity({
       x: 10,
