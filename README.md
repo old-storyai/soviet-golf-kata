@@ -13,6 +13,22 @@ While much of the literature about Data Oriented Design touts its performance ch
 [![ECS Overview](readme-images/overview-thumbnail.png)](https://youtu.be/2rW7ALyHaas)
 
 
+**Prereqs**
+
+ * Install rust with rustup - https://www.rust-lang.org/tools/install
+ * Install wasm-pack cli - https://rustwasm.github.io/wasm-pack/installer/
+
+**Run the code**
+
+```sh
+cd web_ui
+yarn && yarn start
+```
+
+### Interesting files:
+
+ - we
+
 ## TODO:
 
 **Game over:**
