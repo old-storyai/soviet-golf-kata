@@ -34,14 +34,17 @@ yarn && yarn start
 
 ## TODO:
 
-**Game over:**
+**Game over:** - Tim & Anukul
+
 If ball hits flag, then alert game over and close tab
 
 
 
-**Add golf ball that follows flag pole**
+**Add golf ball that follows flag pole** - Steve & Jean
+
 Up to your imagination
 
 
-**Randomize spawning of golf balls with random velocities**
+**Randomize spawning of golf balls with random velocities** - Will & Baptiste
+
 Up to your imagination
