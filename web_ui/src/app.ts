@@ -167,6 +167,49 @@ function NewGame(viewElt: HTMLCanvasElement) {
     .with_system(moving_character)
     .with_system(ball_velocity_system)
     .with_system(velocity_system)
+    .with_system({
+      pos: ui.Position,
+    },
+      (v) => {
+        const rand = Math.random();
+        if (rand < .05) {
+
+          const overlaps = (x1: number, y1: number, x2: number, y2: number) => Math.abs(x1 - x2) < 50 || Math.abs(y1 - y2) < 50
+          const generateSpawnPosition = function (): ui.Position {
+            while (true) {
+              const spawnPosition = {
+                x: Math.random() * stageWidth,
+                y: Math.random() * stageHeight
+              }
+
+              let foundFreeSpawnPosition = true;
+              for (const pos of v.pos.iter()) {
+                if (overlaps(pos[0].x, pos[0].y, spawnPosition.x, spawnPosition.y)) {
+                  foundFreeSpawnPosition = false;
+                  break;
+                }
+              }
+
+              if (foundFreeSpawnPosition) {
+                return spawnPosition;
+              }
+            }
+          }
+
+          const spawnPosition = generateSpawnPosition();
+          const spawnVelocity = {
+            x: Math.random() * 20 - 10,
+            y: Math.random() * 20 - 10
+          }
+
+          addMovingGolfBall(
+            "blue",
+            ui.Position(spawnPosition),
+            ui.Velocity(spawnVelocity)
+          );
+        }
+      }
+    )
     .with_system(
       {
         pos: ui.Position,
