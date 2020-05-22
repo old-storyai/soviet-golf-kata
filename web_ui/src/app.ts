@@ -202,11 +202,21 @@ function NewGame(viewElt: HTMLCanvasElement) {
             y: Math.random() * 20 - 10
           }
 
-          addMovingGolfBall(
-            "blue",
-            ui.Position(spawnPosition),
-            ui.Velocity(spawnVelocity)
-          );
+          const isFollowingBall = Math.random() < 0.3
+          if (isFollowingBall) {
+            addFollowingGolfBall(
+              "red",
+              ui.Position(spawnPosition),
+              hero,
+              ui.Velocity(spawnVelocity)
+            );
+          } else {
+            addMovingGolfBall(
+              "blue",
+              ui.Position(spawnPosition),
+              ui.Velocity(spawnVelocity)
+            );
+          }
         }
       }
     )
