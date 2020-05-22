@@ -185,6 +185,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
           x: flag.x + (flag.width / 2),
           y: flag.y + (flag.height / 2)
         }
+
         if (balls.some(({ height, width, x, y }: any) => {
           const ballXEnd = x + width
           const ballYEnd = y + height
@@ -198,7 +199,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
           return false
         })) {
           // we have hit!
-          console.log('Flag was hit!')
+          alert('Flag was hit!')
         }
       }
     )
