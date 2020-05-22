@@ -44,6 +44,7 @@ pub enum InputCommand {
     MoveUp,
     MoveLeft,
     MoveRight,
+    MoveTowardsPos(Position),
 }
 
 #[derive(Debug, Serialize, TypeScriptDefinition)]

@@ -4,7 +4,7 @@ import { World, iterComponents, System, EntityId } from "shipyard";
 import { GridRender } from "./@helpers/GridRender";
 import { moving_character } from "./moving_character";
 import { velocity_system } from "./velocity_system";
-import { ball_velocity_system } from './ball_velocity_system';
+import { ball_velocity_system } from "./ball_velocity_system";
 
 type GolfBallColors = "blue" | "white" | "red";
 
@@ -52,23 +52,24 @@ function NewGame(viewElt: HTMLCanvasElement) {
   );
   const renderer = new GridRender(setupCanvas(viewElt));
   const world = new World();
-  let keypresses: ui.InputCommand[] = [];
-  world.add_unique(ui.InputCommands, ui.InputCommands(keypresses));
+  let inputCmds: ui.InputCommand[] = [];
+
+  world.add_unique(ui.InputCommands, ui.InputCommands(inputCmds));
 
   // input listeners
   document.addEventListener("keydown", function ({ key }) {
     switch (key) {
       case "ArrowLeft":
-        keypresses.push(ui.InputCommand.MoveLeft());
+        inputCmds.push(ui.InputCommand.MoveLeft());
         break;
       case "ArrowRight":
-        keypresses.push(ui.InputCommand.MoveRight());
+        inputCmds.push(ui.InputCommand.MoveRight());
         break;
       case "ArrowDown":
-        keypresses.push(ui.InputCommand.MoveDown());
+        inputCmds.push(ui.InputCommand.MoveDown());
         break;
       case "ArrowUp":
-        keypresses.push(ui.InputCommand.MoveUp());
+        inputCmds.push(ui.InputCommand.MoveUp());
         break;
       default:
         console.log(`Unhandled key "${key}"`);
@@ -76,8 +77,22 @@ function NewGame(viewElt: HTMLCanvasElement) {
     }
   });
 
+  viewElt.addEventListener("mousemove", function ({ offsetX, offsetY }) {
+    const ratioX = offsetX / this.offsetWidth;
+    const ratioY = offsetY / this.offsetHeight;
+    while (inputCmds.shift()) {}
+    inputCmds.push(
+      ui.InputCommand.MoveTowardsPos(
+        ui.Position({
+          x: ratioX * stageWidth,
+          y: ratioY * stageHeight,
+        })
+      )
+    );
+  });
+
   const hero = world.add_entity(
-    [ui.Renderable, ui.Size, ui.Hero, ui.Position],
+    [ui.Renderable, ui.Size, ui.Hero, ui.Position, ui.Velocity],
     [
       sprites.flag.render,
       sprites.flag.size,
@@ -88,6 +103,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
         x: stageWidth / 2,
         y: stageHeight / 2,
       }),
+      ui.Velocity({ x: 0, y: 0 }),
     ]
   );
 
@@ -121,7 +137,13 @@ function NewGame(viewElt: HTMLCanvasElement) {
 
     world.add_entity(
       [ui.Renderable, ui.Size, ui.Position, ui.Velocity, ui.WalkTowards],
-      [sprite.render, sprite.size, position, velocity, ui.WalkTowards(towards as any)]
+      [
+        sprite.render,
+        sprite.size,
+        position,
+        velocity,
+        ui.WalkTowards(towards as any),
+      ]
     );
   }
 
@@ -162,29 +184,34 @@ function NewGame(viewElt: HTMLCanvasElement) {
     hero
   );
 
+  let is_gameover = false;
+
   world
     .add_workload("default")
     .with_system(moving_character)
     .with_system(ball_velocity_system)
     .with_system(velocity_system)
-    .with_system({
-      pos: ui.Position,
-    },
+    .with_system(
+      {
+        pos: ui.Position,
+      },
       (v) => {
         const rand = Math.random();
-        if (rand < .05) {
-
-          const overlaps = (x1: number, y1: number, x2: number, y2: number) => Math.abs(x1 - x2) < 50 || Math.abs(y1 - y2) < 50
+        if (rand < 0.05) {
+          const overlaps = (x1: number, y1: number, x2: number, y2: number) =>
+            Math.abs(x1 - x2) < 50 || Math.abs(y1 - y2) < 50;
           const generateSpawnPosition = function (): ui.Position {
             while (true) {
               const spawnPosition = {
                 x: Math.random() * stageWidth,
-                y: Math.random() * stageHeight
-              }
+                y: Math.random() * stageHeight,
+              };
 
               let foundFreeSpawnPosition = true;
               for (const pos of v.pos.iter()) {
-                if (overlaps(pos[0].x, pos[0].y, spawnPosition.x, spawnPosition.y)) {
+                if (
+                  overlaps(pos[0].x, pos[0].y, spawnPosition.x, spawnPosition.y)
+                ) {
                   foundFreeSpawnPosition = false;
                   break;
                 }
@@ -194,15 +221,15 @@ function NewGame(viewElt: HTMLCanvasElement) {
                 return spawnPosition;
               }
             }
-          }
+          };
 
           const spawnPosition = generateSpawnPosition();
           const spawnVelocity = {
             x: Math.random() * 20 - 10,
-            y: Math.random() * 20 - 10
-          }
+            y: Math.random() * 20 - 10,
+          };
 
-          const isFollowingBall = Math.random() < 0.3
+          const isFollowingBall = Math.random() < 0.3;
           if (isFollowingBall) {
             addFollowingGolfBall(
               "red",
@@ -237,50 +264,59 @@ function NewGame(viewElt: HTMLCanvasElement) {
       {
         pos: ui.Position,
         renderable: ui.Renderable,
-        size: ui.Size
+        size: ui.Size,
       },
       // so that I can
       (v) => {
-        let flag
-        const balls: ui.Position[] = []
-        for (const [renderable, position, size] of iterComponents(v.renderable, v.pos, v.size)) {
-          if (renderable.imageID === 'flag') {
+        let flag;
+        const balls: ui.Position[] = [];
+        for (const [renderable, position, size] of iterComponents(
+          v.renderable,
+          v.pos,
+          v.size
+        )) {
+          if (renderable.imageID === "flag") {
             flag = {
               ...position,
-              ...size
-            }
+              ...size,
+            };
           } else {
             balls.push({
               ...position,
-              ...size
-            })
+              ...size,
+            });
           }
         }
 
-        const xRange = [flag.x, flag.x + flag.width]
-        const flagXEnd = flag.x + flag.width
-        const yRange = [flag.y, flag.y + flag.height]
-        const flagYEnd = flag.y + flag.height
+        const xRange = [flag.x, flag.x + flag.width];
+        const flagXEnd = flag.x + flag.width;
+        const yRange = [flag.y, flag.y + flag.height];
+        const flagYEnd = flag.y + flag.height;
 
         const flagCenter = {
-          x: flag.x + (flag.width / 2),
-          y: flag.y + (flag.height / 2)
-        }
+          x: flag.x + flag.width / 2,
+          y: flag.y + flag.height / 2,
+        };
 
-        if (balls.some(({ height, width, x, y }: any) => {
-          const ballXEnd = x + width
-          const ballYEnd = y + height
+        if (
+          balls.some(({ height, width, x, y }: any) => {
+            const ballXEnd = x + width;
+            const ballYEnd = y + height;
 
-          if (flagCenter.x <= ballXEnd && flagCenter.x >= x) {
-            if (flagCenter.y <= ballYEnd && flagCenter.y >= y) {
-              return true
+            if (flagCenter.x <= ballXEnd && flagCenter.x >= x) {
+              if (flagCenter.y <= ballYEnd && flagCenter.y >= y) {
+                return true;
+              }
             }
+            // debugger;
+            return false;
+          })
+        ) {
+          if (!is_gameover) {
+            // we have hit!
+            alert("Flag was hit!");
+            is_gameover = true
           }
-          // debugger;
-          return false
-        })) {
-          // we have hit!
-          alert('Flag was hit!')
         }
       }
     )
