@@ -35,7 +35,6 @@ export const moving_character = system(
           }
         },
       })(command);
-      console.log(v.pos)
     }
   }
 );

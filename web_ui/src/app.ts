@@ -110,30 +110,30 @@ function NewGame(viewElt: HTMLCanvasElement) {
   addMovingGolfBall(
     "blue",
     ui.Position({
-      x: 200,
-      y: 300,
+      x: 620,
+      y: 500,
     })
   );
 
-  addMovingGolfBall(
-    "blue",
-    ui.Position({
-      x: 700,
-      y: 100,
-    })
-  );
+  // addMovingGolfBall(
+  //   "blue",
+  //   ui.Position({
+  //     x: 700,
+  //     y: 100,
+  //   })
+  // );
 
-  addMovingGolfBall(
-    "red",
-    ui.Position({
-      x: 700,
-      y: 1200,
-    }),
-    ui.Velocity({
-      x: 10,
-      y: -10,
-    })
-  );
+  // addMovingGolfBall(
+  //   "red",
+  //   ui.Position({
+  //     x: 700,
+  //     y: 1200,
+  //   }),
+  //   ui.Velocity({
+  //     x: 10,
+  //     y: -10,
+  //   })
+  // );
 
   world
     .add_workload("default")
@@ -148,6 +148,57 @@ function NewGame(viewElt: HTMLCanvasElement) {
         renderer.fillAll("#00ff00");
         for (const [renderable, pos] of iterComponents(v.renderable, v.pos)) {
           renderer.draw(pos.x, pos.y, renderable);
+        }
+      }
+    )
+    .with_system(
+      // I want all components that have
+      {
+        pos: ui.Position,
+        renderable: ui.Renderable,
+        size: ui.Size
+      },
+      // so that I can
+      (v) => {
+        let flag
+        const balls: ui.Position[] = []
+        for (const [renderable, position, size] of iterComponents(v.renderable, v.pos, v.size)) {
+          if (renderable.imageID === 'flag') {
+            flag = {
+              ...position,
+              ...size
+            }
+          } else {
+            balls.push({
+              ...position,
+              ...size
+            })
+          }
+        }
+
+        const xRange = [flag.x, flag.x + flag.width]
+        const flagXEnd = flag.x + flag.width
+        const yRange = [flag.y, flag.y + flag.height]
+        const flagYEnd = flag.y + flag.height
+
+        const flagCenter = {
+          x: flag.x + (flag.width / 2),
+          y: flag.y + (flag.height / 2)
+        }
+        if (balls.some(({ height, width, x, y }: any) => {
+          const ballXEnd = x + width
+          const ballYEnd = y + height
+
+          if (flagCenter.x <= ballXEnd && flagCenter.x >= x) {
+            if (flagCenter.y <= ballYEnd && flagCenter.y >= y) {
+              return true
+            }
+          }
+          // debugger;
+          return false
+        })) {
+          // we have hit!
+          console.log('Flag was hit!')
         }
       }
     )
