@@ -1,9 +1,10 @@
 import { ui } from "./executor";
 import { invariant } from "@helpers";
-import { World, iterComponents, System } from "shipyard";
+import { World, iterComponents, System, EntityId } from "shipyard";
 import { GridRender } from "./@helpers/GridRender";
 import { moving_character } from "./moving_character";
 import { velocity_system } from "./velocity_system";
+import { ball_velocity_system } from './ball_velocity_system';
 
 type GolfBallColors = "blue" | "white" | "red";
 
@@ -75,7 +76,7 @@ function NewGame(viewElt: HTMLCanvasElement) {
     }
   });
 
-  world.add_entity(
+  const hero = world.add_entity(
     [ui.Renderable, ui.Size, ui.Hero, ui.Position],
     [
       sprites.flag.render,
@@ -107,6 +108,23 @@ function NewGame(viewElt: HTMLCanvasElement) {
     );
   }
 
+  function addFollowingGolfBall(
+    color: GolfBallColors,
+    position: ui.Position,
+    towards: EntityId,
+    velocity = ui.Velocity({
+      x: 10,
+      y: 10,
+    })
+  ) {
+    const sprite = sprites.golfball(color);
+
+    world.add_entity(
+      [ui.Renderable, ui.Size, ui.Position, ui.Velocity, ui.WalkTowards],
+      [sprite.render, sprite.size, position, velocity, ui.WalkTowards(towards as any)]
+    );
+  }
+
   addMovingGolfBall(
     "blue",
     ui.Position({
@@ -135,9 +153,19 @@ function NewGame(viewElt: HTMLCanvasElement) {
   //   })
   // );
 
+  addFollowingGolfBall(
+    "white",
+    ui.Position({
+      x: 700,
+      y: 1200,
+    }),
+    hero
+  );
+
   world
     .add_workload("default")
     .with_system(moving_character)
+    .with_system(ball_velocity_system)
     .with_system(velocity_system)
     .with_system(
       {
